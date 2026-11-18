@@ -1,0 +1,48 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Hookrate demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .pitch { position: absolute; left: 64px; top: 0; bottom: 0; width: 560px; display: flex; flex-direction: column; justify-content: center; color: #fff; }
+  .pitch .logo { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; margin-bottom: 36px; color: #a7f3d0; }
+  .pitch .logo img { width: 44px; height: 44px; }
+  .pitch h1 { font-size: 46px; line-height: 1.1; margin: 0 0 20px; letter-spacing: -0.5px; }
+  .pitch p { font-size: 20px; line-height: 1.5; color: #cbd5e1; margin: 0 0 14px; }
+  .pitch .tag { display: inline-block; margin-top: 22px; font-size: 14px; color: #94a3b8; }
+  /* promo tile mode */
+  body.tile .pitch { left: 28px; width: 384px; }
+  body.tile .pitch .logo { font-size: 30px; margin-bottom: 14px; }
+  body.tile .pitch h1 { font-size: 26px; margin-bottom: 8px; }
+  body.tile .pitch p { font-size: 15px; }
+</style></head>
+<body>
+<div class="pitch" id="pitch"></div>
+<script src="../src/config.js"></script>
+<script>window.chrome = { runtime: { sendMessage() {} }, storage: { local: { get() {}, set() {} } } };</script>
+<script src="../src/core.js"></script>
+<script src="../src/scrape.js"></script>
+<script src="../src/panel.js"></script>
+<script src="demo-data.js"></script>
+<script>
+  const scenes = {
+    1: { pro: true, h: 'Find the Reels that actually bring followers', p: ['Meta shows follows for your Page, not per Reel. Hookrate estimates which Reels earned them.', 'Plus breakouts, hook hold and plain-English findings.'] },
+    2: { pro: true, scroll: 'h2:last-of-type', h: 'Know when to post, and how often', p: ['Median views by posting hour.', 'See when posting more Reels a day starts splitting your reach.'] },
+    3: { pro: false, sort: 'hold', h: 'See which hooks hold viewers', p: ['3-second hold for every Reel, next to its views.', 'Free to use. Pro unlocks follows and posting times.'] },
+  };
+  const tile = location.hash === '#tile';
+  const s = scenes[location.hash.slice(1)] || scenes[1];
+  const pitch = document.getElementById('pitch');
+  if (tile) {
+    document.body.classList.add('tile');
+    pitch.innerHTML = `<div class="logo"><img src="../icon128.png">Hookrate</div><h1>Which Reels bring followers?</h1><p>Follows, hooks and best posting times for Facebook creators.</p>`;
+  } else {
+    pitch.innerHTML = `<div class="logo"><img src="../icon128.png">Hookrate</div><h1>${s.h}</h1>${s.p.map((x) => `<p>${x}</p>`).join('')}<span class="tag">Reads your Meta Business Suite insights. Your data stays in your browser.</span>`;
+    RI.page = () => 'content';
+    RI.pro = s.pro;
+    RI.mountUI({ open() {}, scan() {}, charts() {}, pay() {}, refresh() { RI.renderPanel(demoState(), 'Scanned 21 reels just now.'); }, close() {} });
+    RI.renderPanel(demoState(), 'Scanned 21 reels just now.');
+    const root = document.getElementById('reel-insights-root').shadowRoot;
+    if (s.sort) root.querySelector(`th[data-sort="${s.sort}"]`).click();
+    if (s.scroll) { const body = root.querySelector('.body'); const el = [...root.querySelectorAll('h2')].find((h) => /When you posted/.test(h.textContent)); body.scrollTop = el.offsetTop - 70; }
+  }
+</script>
+</body></html>
